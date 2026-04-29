@@ -1,0 +1,29 @@
+# Flutter/Dart
+.dart_tool/
+.flutter-plugins/
+.flutter-plugins-dependencies
+.flutter-plugins-dependencies/
+.packages
+.pub/
+.pub-cache/
+
+# Build outputs
+build/
+**/build/
+.dart_tool/
+**/.dart_tool/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# macOS
+.DS_Store
+
+# Design exports / large local artifacts
+fig_extract/
+fig_extract_out/
+*.fig
+*.pdf
+
