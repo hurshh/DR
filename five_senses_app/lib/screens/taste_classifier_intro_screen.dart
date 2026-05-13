@@ -1,32 +1,44 @@
 import 'package:flutter/material.dart';
 
 import '../models/app_routes.dart';
-import '../theme/app_theme.dart';
 
 class TasteClassifierIntroScreen extends StatelessWidget {
   const TasteClassifierIntroScreen({super.key});
 
+  static const _headerColor = Color(0xFF6A59E0);
+
   @override
   Widget build(BuildContext context) {
-    const headerColor = Color(0xFF6A59E0);
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.shortestSide >= 600;
+
+    final headerH = isTablet ? 280.0 : 220.0;
+    final avatarSize = isTablet ? 180.0 : 150.0;
+    final avatarBottom = -(avatarSize / 2.0);
+    final scrollPaddingTop = avatarSize / 2.0 + 36.0;
+    final contentPad = isTablet ? 24.0 : 18.0;
+    final maxW = isTablet ? 680.0 : double.infinity;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF3F0FF),
       body: SafeArea(
         child: Column(
           children: [
+            // ── Purple header ─────────────────────────────────────────────
             Container(
-              height: 220,
+              height: headerH,
               width: double.infinity,
-              color: headerColor,
+              color: _headerColor,
               child: Stack(
+                clipBehavior: Clip.none,
                 children: [
+                  // Back button
                   Positioned(
-                    top: 18 + MediaQuery.of(context).padding.top,
-                    left: 16,
+                    top: isTablet ? 22 : 16,
+                    left: 8,
                     child: IconButton(
-                      onPressed: () =>
-                          Navigator.pushReplacementNamed(context, Routes.playPick),
+                      onPressed: () => Navigator.pushReplacementNamed(
+                          context, Routes.playPick),
                       icon: const Icon(
                         Icons.arrow_back_ios_rounded,
                         color: Colors.white,
@@ -34,163 +46,190 @@ class TasteClassifierIntroScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+                  // Title block
                   Positioned(
-                    top: 54,
-                    left: 24,
-                    right: 24,
+                    top: isTablet ? 64 : 52,
+                    left: contentPad,
+                    right: contentPad,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Taste Classifier',
                           style: TextStyle(
-                            fontSize: 34,
+                            fontSize: isTablet ? 42 : 34,
                             fontWeight: FontWeight.w900,
                             color: Colors.white,
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 4),
                         Text(
-                          'Taste Sense 🔥',
+                          'Taste Sense 👅',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                             fontWeight: FontWeight.w700,
-                            fontSize: 16,
+                            fontSize: isTablet ? 20 : 16,
                           ),
                         ),
                       ],
                     ),
                   ),
+                  // Hero circle avatar
                   Positioned(
-                    bottom: -58,
+                    bottom: avatarBottom,
                     left: 0,
                     right: 0,
                     child: Center(
                       child: Container(
-                        width: 150,
-                        height: 150,
+                        width: avatarSize,
+                        height: avatarSize,
                         decoration: const BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(0x20000000),
+                              blurRadius: 16,
+                              offset: Offset(0, 6),
+                            ),
+                          ],
                         ),
                         alignment: Alignment.center,
-                        child: const Icon(Icons.restaurant_rounded,
-                            size: 74, color: Color(0xFF6A59E0)),
+                        child: Text(
+                          '👅',
+                          style: TextStyle(fontSize: isTablet ? 72 : 58),
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
+
+            // ── Scrollable content ────────────────────────────────────────
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(18, 96, 18, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'The 4 Taste Zones on your tongue:',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF2A2A2A),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    _ZoneRow(
-                      stripe: Colors.red.withOpacity(0.35),
-                      color: Colors.red,
-                      title: 'Sweet',
-                      subtitle: 'Tip of tongue • Sugar, Honey, Fruit',
-                      icon: Icons.emoji_food_beverage_rounded,
-                    ),
-                    const SizedBox(height: 10),
-                    _ZoneRow(
-                      stripe: Colors.amber.withOpacity(0.35),
-                      color: Colors.amber,
-                      title: 'Sour',
-                      subtitle: 'Sides of tongue • Lemon, Vinegar',
-                      icon: Icons.water_drop_rounded,
-                    ),
-                    const SizedBox(height: 10),
-                    _ZoneRow(
-                      stripe: Colors.teal.withOpacity(0.35),
-                      color: Colors.teal,
-                      title: 'Salty',
-                      subtitle: 'Front sides • Chips, Pretzels',
-                      icon: Icons.layers_rounded,
-                    ),
-                    const SizedBox(height: 10),
-                    _ZoneRow(
-                      stripe: Colors.deepPurple.withOpacity(0.4),
-                      color: Colors.deepPurple,
-                      title: 'Bitter',
-                      subtitle: 'Back of tongue • Coffee, Dark Choc.',
-                      icon: Icons.local_drink_rounded,
-                    ),
-                    const SizedBox(height: 18),
-                    Center(
-                      child: SizedBox(
-                        height: 46,
-                        child: TextButton(
-                          onPressed: () {},
-                          style: TextButton.styleFrom(
-                            backgroundColor:
-                                const Color(0xFFE7E6F6).withOpacity(0.9),
-                            foregroundColor: const Color(0xFF6A59E0),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 18,
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                          ),
-                          child: const Text(
-                            '🌙 Tongue Map',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    SizedBox(
-                      height: 62,
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => Navigator.pushReplacementNamed(
-                            context, Routes.tasteClassifierQuestion4),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: headerColor,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        child: const Text(
-                          'Taste & Classify!',
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: maxW),
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(
+                        contentPad, scrollPaddingTop, contentPad, 28),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'The 4 Taste Zones on your tongue:',
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: isTablet ? 24 : 20,
                             fontWeight: FontWeight.w900,
+                            color: const Color(0xFF2A2A2A),
                           ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Center(
-                      child: Text(
-                        'Best: ★★★★ High Score: 1600',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFFB7B7B7),
+                        const SizedBox(height: 14),
+                        _ZoneRow(
+                          color: const Color(0xFFFF5F8D),
+                          title: 'Sweet',
+                          subtitle: 'Tip of tongue • Sugar, Honey, Fruit',
+                          icon: Icons.emoji_food_beverage_rounded,
+                          emoji: '🍓',
+                          isTablet: isTablet,
                         ),
-                      ),
+                        const SizedBox(height: 10),
+                        _ZoneRow(
+                          color: const Color(0xFFFFAB00),
+                          title: 'Sour',
+                          subtitle: 'Sides of tongue • Lemon, Vinegar',
+                          icon: Icons.water_drop_rounded,
+                          emoji: '🍋',
+                          isTablet: isTablet,
+                        ),
+                        const SizedBox(height: 10),
+                        _ZoneRow(
+                          color: const Color(0xFF00ACC1),
+                          title: 'Salty',
+                          subtitle: 'Front sides • Chips, Pretzels',
+                          icon: Icons.layers_rounded,
+                          emoji: '🍟',
+                          isTablet: isTablet,
+                        ),
+                        const SizedBox(height: 10),
+                        _ZoneRow(
+                          color: const Color(0xFF7C4DFF),
+                          title: 'Bitter',
+                          subtitle: 'Back of tongue • Coffee, Dark Choc.',
+                          icon: Icons.local_drink_rounded,
+                          emoji: '☕',
+                          isTablet: isTablet,
+                        ),
+                        const SizedBox(height: 22),
+
+                        // Fun fact card
+                        Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.all(isTablet ? 20 : 16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEDE7F6),
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: Row(
+                            children: [
+                              Text('🧠',
+                                  style: TextStyle(
+                                      fontSize: isTablet ? 28 : 22)),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Did you know? Humans have about 10,000 taste buds on their tongue!',
+                                  style: TextStyle(
+                                    fontSize: isTablet ? 16 : 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF4A3AAA),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+
+                        // Start button
+                        SizedBox(
+                          height: isTablet ? 68 : 60,
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.pushReplacementNamed(
+                                context, Routes.tasteClassifierQuestion4),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _headerColor,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                            ),
+                            child: Text(
+                              'Taste & Classify! 👅',
+                              style: TextStyle(
+                                fontSize: isTablet ? 22 : 20,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Center(
+                          child: Text(
+                            '10 foods • 90 seconds • 5 lives',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFFB7B7B7),
+                              fontSize: isTablet ? 16 : 14,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -202,25 +241,27 @@ class TasteClassifierIntroScreen extends StatelessWidget {
 }
 
 class _ZoneRow extends StatelessWidget {
-  final Color stripe;
   final Color color;
   final String title;
   final String subtitle;
   final IconData icon;
+  final String emoji;
+  final bool isTablet;
 
   const _ZoneRow({
-    required this.stripe,
     required this.color,
     required this.title,
     required this.subtitle,
     required this.icon,
+    required this.emoji,
+    required this.isTablet,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 68,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: EdgeInsets.symmetric(
+          horizontal: 14, vertical: isTablet ? 14 : 10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
@@ -229,23 +270,30 @@ class _ZoneRow extends StatelessWidget {
             color: Color(0x0D000000),
             blurRadius: 8,
             offset: Offset(0, 3),
-          )
+          ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            width: 6,
+            width: 5,
+            height: isTablet ? 56 : 46,
             decoration: BoxDecoration(
-              color: stripe,
+              color: color,
               borderRadius: BorderRadius.circular(12),
             ),
           ),
           const SizedBox(width: 12),
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: color.withOpacity(0.15),
-            child: Icon(icon, size: 26, color: color),
+          Container(
+            width: isTablet ? 52 : 44,
+            height: isTablet ? 52 : 44,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: Text(emoji,
+                style: TextStyle(fontSize: isTablet ? 24 : 20)),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -256,7 +304,7 @@ class _ZoneRow extends StatelessWidget {
                 Text(
                   title,
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: isTablet ? 20 : 18,
                     fontWeight: FontWeight.w900,
                     color: const Color(0xFF2A2A2A),
                   ),
@@ -267,12 +315,27 @@ class _ZoneRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: isTablet ? 15 : 13,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black.withOpacity(0.35),
+                    color: Colors.black.withValues(alpha: 0.35),
                   ),
                 ),
               ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: isTablet ? 13 : 11,
+                fontWeight: FontWeight.w800,
+                color: color,
+              ),
             ),
           ),
         ],
@@ -280,4 +343,3 @@ class _ZoneRow extends StatelessWidget {
     );
   }
 }
-

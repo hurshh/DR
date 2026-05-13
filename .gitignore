@@ -18,6 +18,9 @@ build/
 .vscode/
 *.iml
 
+# Cursor / Claude local project state (do not commit)
+.claude/
+
 # macOS
 .DS_Store
 
