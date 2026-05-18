@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
@@ -16,54 +18,75 @@ class _SoundMatchRound2ScreenState extends State<SoundMatchRound2Screen> {
   static const Color _errorColor = Color(0xFFFF6B6B);
 
   final AudioPlayer _audioPlayer = AudioPlayer();
+  final Random _random = Random();
   int _roundIndex = 0;
   int _score = 0;
   String? _selectedAnswer;
+  late final List<_SoundQuestion> _questions;
 
-  final List<_SoundQuestion> _questions = const [
-    _SoundQuestion(
+  static const List<_SoundOption> _answerPool = [
+    _SoundOption(label: 'Dog', icon: Icons.pets_rounded),
+    _SoundOption(label: 'Bell', icon: Icons.add_alarm_rounded),
+    _SoundOption(label: 'Rain', icon: Icons.water_drop_rounded),
+    _SoundOption(label: 'Piano', icon: Icons.piano_rounded),
+    _SoundOption(label: 'Cat', icon: Icons.cruelty_free_rounded),
+    _SoundOption(label: 'Clock', icon: Icons.access_time_filled_rounded),
+    _SoundOption(label: 'Train', icon: Icons.train_rounded),
+    _SoundOption(label: 'Bird', icon: Icons.flutter_dash_rounded),
+    _SoundOption(label: 'Drum', icon: Icons.album_rounded),
+    _SoundOption(label: 'Phone', icon: Icons.phone_android_rounded),
+  ];
+
+  static const List<_SoundItem> _soundItems = [
+    _SoundItem(
       answer: 'Bell',
       assetPath: 'sounds/bell.mp3',
       prompt: 'Listen for the ringing sound.',
-      options: [
-        _SoundOption(label: 'Dog', icon: Icons.pets_rounded),
-        _SoundOption(label: 'Bell', icon: Icons.add_alarm_rounded),
-        _SoundOption(label: 'Rain', icon: Icons.water_drop_rounded),
-        _SoundOption(label: 'Piano', icon: Icons.piano_rounded),
-      ],
     ),
-    _SoundQuestion(
+    _SoundItem(
       answer: 'Dog',
       assetPath: 'sounds/dog.mp3',
       prompt: 'Listen for the animal sound.',
-      options: [
-        _SoundOption(label: 'Dog', icon: Icons.pets_rounded),
-        _SoundOption(label: 'Bell', icon: Icons.add_alarm_rounded),
-        _SoundOption(label: 'Rain', icon: Icons.water_drop_rounded),
-        _SoundOption(label: 'Piano', icon: Icons.piano_rounded),
-      ],
     ),
-    _SoundQuestion(
+    _SoundItem(
       answer: 'Rain',
       assetPath: 'sounds/rain.mp3',
       prompt: 'Listen for the weather sound.',
-      options: [
-        _SoundOption(label: 'Dog', icon: Icons.pets_rounded),
-        _SoundOption(label: 'Bell', icon: Icons.add_alarm_rounded),
-        _SoundOption(label: 'Rain', icon: Icons.water_drop_rounded),
-        _SoundOption(label: 'Piano', icon: Icons.piano_rounded),
-      ],
     ),
-    _SoundQuestion(
+    _SoundItem(
       answer: 'Piano',
       assetPath: 'sounds/piano.mp3',
       prompt: 'Listen for the music sound.',
-      options: [
-        _SoundOption(label: 'Dog', icon: Icons.pets_rounded),
-        _SoundOption(label: 'Bell', icon: Icons.add_alarm_rounded),
-        _SoundOption(label: 'Rain', icon: Icons.water_drop_rounded),
-        _SoundOption(label: 'Piano', icon: Icons.piano_rounded),
-      ],
+    ),
+    _SoundItem(
+      answer: 'Cat',
+      assetPath: 'sounds/cat.mp3',
+      prompt: 'Listen for the soft animal sound.',
+    ),
+    _SoundItem(
+      answer: 'Clock',
+      assetPath: 'sounds/clock.mp3',
+      prompt: 'Listen for the ticking sound.',
+    ),
+    _SoundItem(
+      answer: 'Train',
+      assetPath: 'sounds/train-modified.mp3',
+      prompt: 'Listen for the moving vehicle sound.',
+    ),
+    _SoundItem(
+      answer: 'Bird',
+      assetPath: 'sounds/bird.mp3',
+      prompt: 'Listen for the chirping sound.',
+    ),
+    _SoundItem(
+      answer: 'Drum',
+      assetPath: 'sounds/drum.mp3',
+      prompt: 'Listen for the beat.',
+    ),
+    _SoundItem(
+      answer: 'Phone',
+      assetPath: 'sounds/phone.mp3',
+      prompt: 'Listen for the ringing device.',
     ),
   ];
 
@@ -72,9 +95,40 @@ class _SoundMatchRound2ScreenState extends State<SoundMatchRound2Screen> {
   bool get _isCorrect => _selectedAnswer == _currentQuestion.answer;
 
   @override
+  void initState() {
+    super.initState();
+    _questions = _buildQuestions();
+  }
+
+  @override
   void dispose() {
     _audioPlayer.dispose();
     super.dispose();
+  }
+
+  List<_SoundQuestion> _buildQuestions() {
+    final shuffledItems = List<_SoundItem>.of(_soundItems)..shuffle(_random);
+
+    return [
+      for (final item in shuffledItems)
+        _SoundQuestion(
+          answer: item.answer,
+          assetPath: item.assetPath,
+          prompt: item.prompt,
+          options: _buildOptionsFor(item.answer),
+        ),
+    ];
+  }
+
+  List<_SoundOption> _buildOptionsFor(String answer) {
+    final correctOption = _answerPool.firstWhere(
+      (option) => option.label == answer,
+    );
+    final distractors =
+        _answerPool.where((option) => option.label != answer).toList()
+          ..shuffle(_random);
+
+    return [correctOption, ...distractors.take(3)]..shuffle(_random);
   }
 
   Future<void> _playCurrentSound() async {
@@ -506,6 +560,18 @@ class _SoundQuestion {
     required this.assetPath,
     required this.prompt,
     required this.options,
+  });
+}
+
+class _SoundItem {
+  final String answer;
+  final String assetPath;
+  final String prompt;
+
+  const _SoundItem({
+    required this.answer,
+    required this.assetPath,
+    required this.prompt,
   });
 }
 
