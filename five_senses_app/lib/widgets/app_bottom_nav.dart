@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 
-enum BottomTab { home, learn, play, practice }
+enum BottomTab { home, learn, play }
 
 class AppBottomNav extends StatelessWidget {
   final BottomTab selectedTab;
@@ -25,10 +25,8 @@ class AppBottomNav extends StatelessWidget {
           return BottomTab.home;
         case 1:
           return BottomTab.learn;
-        case 2:
-          return BottomTab.play;
         default:
-          return BottomTab.practice;
+          return BottomTab.play;
       }
     }
 
@@ -40,8 +38,6 @@ class AppBottomNav extends StatelessWidget {
           return 1;
         case BottomTab.play:
           return 2;
-        case BottomTab.practice:
-          return 3;
       }
     }
 
@@ -70,11 +66,6 @@ class AppBottomNav extends StatelessWidget {
           icon: Icon(Icons.videogame_asset_outlined),
           activeIcon: Icon(Icons.videogame_asset_rounded),
           label: 'Play',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.edit_outlined),
-          activeIcon: Icon(Icons.edit_rounded),
-          label: 'Practice',
         ),
       ],
     );

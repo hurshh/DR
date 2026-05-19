@@ -27,9 +27,6 @@ class SightDetailScreen extends StatelessWidget {
           case BottomTab.play:
             Navigator.pushReplacementNamed(context, Routes.playPick);
             break;
-          case BottomTab.practice:
-            Navigator.pushReplacementNamed(context, Routes.practiceQuestion2);
-            break;
         }
       },
       backgroundColor: AppTheme.lightCream,

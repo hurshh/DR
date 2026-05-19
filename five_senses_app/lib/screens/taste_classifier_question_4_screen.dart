@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../models/app_routes.dart';
+import '../services/audio_service.dart';
 
 // ─── Data models ─────────────────────────────────────────────────────────────
 
@@ -153,6 +154,35 @@ class TasteClassifierQuestion4Screen extends StatefulWidget {
       _TasteClassifierQuestion4ScreenState();
 }
 
+Future<void> _showQuitDialog(BuildContext context) async {
+  final quit = await showDialog<bool>(
+    context: context,
+    builder: (_) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: const Text('End Game?', style: TextStyle(fontWeight: FontWeight.w900)),
+      content: const Text('Are you sure you want to quit? Your progress will be lost.'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Keep Playing'),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.redAccent,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text('Quit'),
+        ),
+      ],
+    ),
+  );
+  if (quit == true && context.mounted) {
+    Navigator.pushReplacementNamed(context, Routes.playPick);
+  }
+}
+
 class _TasteClassifierQuestion4ScreenState
     extends State<TasteClassifierQuestion4Screen> {
   static const _headerColor = Color(0xFF6A59E0);
@@ -171,6 +201,11 @@ class _TasteClassifierQuestion4ScreenState
   void initState() {
     super.initState();
     _startTimer();
+    Future.delayed(const Duration(milliseconds: 400), () {
+      AudioService.instance.speak(
+        "Welcome to Taste Classifier! Look at each food and pick if it tastes Sweet, Sour, Salty, or Bitter. You have 5 lives and 90 seconds. Let's go!",
+      );
+    });
   }
 
   @override
@@ -205,6 +240,11 @@ class _TasteClassifierQuestion4ScreenState
         if (_lives == 0) _timer?.cancel();
       }
     });
+    if (correct) {
+      AudioService.instance.speak("Nailed it!");
+    } else {
+      AudioService.instance.speak("Not quite! You've got this!");
+    }
   }
 
   void _onNext() {
@@ -371,6 +411,14 @@ class _TasteClassifierQuestion4ScreenState
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  onPressed: () => _showQuitDialog(context),
+                  icon: const Icon(Icons.close_rounded, color: Colors.white),
+                  tooltip: 'End Game',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                 ),
               ],
             ),

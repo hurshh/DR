@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models/app_routes.dart';
+import '../services/audio_service.dart';
 import '../theme/app_theme.dart';
 
 // ── Round data ────────────────────────────────────────────────────────────────
@@ -144,6 +145,35 @@ const List<_RoundData> _kRounds = [
   ),
 ];
 
+Future<void> _showQuitDialog(BuildContext context) async {
+  final quit = await showDialog<bool>(
+    context: context,
+    builder: (_) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: const Text('End Game?', style: TextStyle(fontWeight: FontWeight.w900)),
+      content: const Text('Are you sure you want to quit? Your progress will be lost.'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Keep Playing'),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.redAccent,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text('Quit'),
+        ),
+      ],
+    ),
+  );
+  if (quit == true && context.mounted) {
+    Navigator.pushReplacementNamed(context, Routes.playPick);
+  }
+}
+
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 class SpotDifferenceResultScreen extends StatefulWidget {
@@ -171,6 +201,11 @@ class _SDState extends State<SpotDifferenceResultScreen> {
     super.initState();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() => _seconds++);
+    });
+    Future.delayed(const Duration(milliseconds: 400), () {
+      AudioService.instance.speak(
+        "Welcome to Spot the Difference! Find all the differences between the two images. Tap on the right image to mark what's different. Good luck!",
+      );
     });
   }
 
@@ -214,6 +249,7 @@ class _SDState extends State<SpotDifferenceResultScreen> {
           _toast = '✅ +10 pts · Found: ${_rd.labels[i]}!';
           _toastGood = true;
         });
+        AudioService.instance.speak("YES! You spotted ${_rd.labels[i]}!");
         return;
       }
     }
@@ -223,6 +259,7 @@ class _SDState extends State<SpotDifferenceResultScreen> {
       _toast = _lives > 0 ? '❌ Not quite! $_lives ❤️ left' : '💀 No lives left!';
       _toastGood = false;
     });
+    AudioService.instance.speak(_lives > 0 ? "Keep hunting! You can do it!" : "Game over! Better luck next time!");
   }
 
   // ── Build ─────────────────────────────────────────────────────────────────
@@ -324,7 +361,7 @@ class _SDState extends State<SpotDifferenceResultScreen> {
           IconButton(
             icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 20),
             padding: EdgeInsets.zero,
-            onPressed: () => Navigator.pushReplacementNamed(context, Routes.home),
+            onPressed: () => Navigator.pushReplacementNamed(context, Routes.playPick),
           ),
           if (tablet) ...[
             const SizedBox(width: 4),
@@ -371,6 +408,12 @@ class _SDState extends State<SpotDifferenceResultScreen> {
             ),
           ),
           const SizedBox(width: 4),
+          IconButton(
+            icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 20),
+            padding: EdgeInsets.zero,
+            tooltip: 'End Game',
+            onPressed: () => _showQuitDialog(context),
+          ),
         ],
       ),
     );
@@ -704,7 +747,7 @@ class _SDState extends State<SpotDifferenceResultScreen> {
           label: '🏠 Go Home',
           color: Colors.white.withValues(alpha: 0.08),
           textColor: Colors.white70,
-          onTap: () => Navigator.pushReplacementNamed(context, Routes.home),
+          onTap: () => Navigator.pushReplacementNamed(context, Routes.playPick),
         ),
       ],
     );
@@ -736,7 +779,7 @@ class _SDState extends State<SpotDifferenceResultScreen> {
                   _hintUsed = false;
                 });
               } else {
-                Navigator.pushReplacementNamed(context, Routes.home);
+                Navigator.pushReplacementNamed(context, Routes.playPick);
               }
             },
           ),

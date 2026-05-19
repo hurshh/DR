@@ -1,10 +1,30 @@
 import 'package:flutter/material.dart';
 
 import '../models/app_routes.dart';
+import '../services/audio_service.dart';
 import '../theme/app_theme.dart';
 
-class OnboardingScreen extends StatelessWidget {
+class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
+
+  @override
+  State<OnboardingScreen> createState() => _OnboardingScreenState();
+}
+
+class _OnboardingScreenState extends State<OnboardingScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 600), () {
+      AudioService.instance.speak("Welcome to Five Senses! Let's GO!");
+    });
+  }
+
+  @override
+  void dispose() {
+    AudioService.instance.stop();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

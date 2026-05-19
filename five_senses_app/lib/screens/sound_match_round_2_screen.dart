@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
 import '../models/app_routes.dart';
+import '../services/audio_service.dart';
 
 class SoundMatchRound2Screen extends StatefulWidget {
   const SoundMatchRound2Screen({super.key});
@@ -98,6 +99,11 @@ class _SoundMatchRound2ScreenState extends State<SoundMatchRound2Screen> {
   void initState() {
     super.initState();
     _questions = _buildQuestions();
+    Future.delayed(const Duration(milliseconds: 400), () {
+      AudioService.instance.speak(
+        "Welcome to Sound Match! Listen to each sound and tap the object that makes it. Good luck!",
+      );
+    });
   }
 
   @override
@@ -141,12 +147,18 @@ class _SoundMatchRound2ScreenState extends State<SoundMatchRound2Screen> {
       return;
     }
 
+    final correct = answer == _currentQuestion.answer;
     setState(() {
       _selectedAnswer = answer;
-      if (answer == _currentQuestion.answer) {
+      if (correct) {
         _score += 1;
       }
     });
+    if (correct) {
+      AudioService.instance.speak("AWESOME! ${_currentQuestion.answer} makes that sound!");
+    } else {
+      AudioService.instance.speak("So close! It was ${_currentQuestion.answer}. Keep it up!");
+    }
   }
 
   void _goToNextRound() {
@@ -267,6 +279,35 @@ class _SoundMatchRound2ScreenState extends State<SoundMatchRound2Screen> {
   }
 }
 
+Future<void> _showQuitDialog(BuildContext context) async {
+  final quit = await showDialog<bool>(
+    context: context,
+    builder: (_) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: const Text('End Game?', style: TextStyle(fontWeight: FontWeight.w900)),
+      content: const Text('Are you sure you want to quit? Your progress will be lost.'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Keep Playing'),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.redAccent,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text('Quit'),
+        ),
+      ],
+    ),
+  );
+  if (quit == true && context.mounted) {
+    Navigator.pushReplacementNamed(context, Routes.playPick);
+  }
+}
+
 class _GameHeader extends StatelessWidget {
   final int round;
   final int totalRounds;
@@ -286,11 +327,11 @@ class _GameHeader extends StatelessWidget {
       color: _SoundMatchRound2ScreenState._headerColor,
       child: Column(
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(18, 14, 18, 10),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 14, 8, 10),
             child: Row(
               children: [
-                Expanded(
+                const Expanded(
                   child: Text(
                     'Sound Match',
                     style: TextStyle(
@@ -300,7 +341,13 @@ class _GameHeader extends StatelessWidget {
                     ),
                   ),
                 ),
-                Icon(Icons.waves_rounded, color: Colors.white, size: 26),
+                const Icon(Icons.waves_rounded, color: Colors.white, size: 26),
+                const SizedBox(width: 4),
+                IconButton(
+                  onPressed: () => _showQuitDialog(context),
+                  icon: const Icon(Icons.close_rounded, color: Colors.white),
+                  tooltip: 'End Game',
+                ),
               ],
             ),
           ),

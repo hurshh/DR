@@ -178,7 +178,7 @@ class GameResultScreen extends StatelessWidget {
                       ),
                       onPressed: () => Navigator.pushReplacementNamed(
                         context,
-                        Routes.practiceQuestion2,
+                        Routes.playPick,
                       ),
                       child: const Text(
                         'Play Again',
@@ -203,7 +203,7 @@ class GameResultScreen extends StatelessWidget {
                         ),
                       ),
                       onPressed: () =>
-                          Navigator.pushReplacementNamed(context, Routes.home),
+                          Navigator.pushReplacementNamed(context, Routes.playPick),
                       child: const Text(
                         'Go Home',
                         style: TextStyle(

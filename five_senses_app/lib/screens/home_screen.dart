@@ -28,9 +28,6 @@ class HomeScreen extends StatelessWidget {
           case BottomTab.play:
             Navigator.pushReplacementNamed(context, Routes.playPick);
             break;
-          case BottomTab.practice:
-            Navigator.pushReplacementNamed(context, Routes.practiceQuestion2);
-            break;
         }
       },
       body: LayoutBuilder(
@@ -159,7 +156,7 @@ class HomeScreen extends StatelessWidget {
                                 case ActivityType.practice:
                                   Navigator.pushNamed(
                                     context,
-                                    Routes.practiceQuestion2,
+                                    Routes.playPick,
                                   );
                                   break;
                               }

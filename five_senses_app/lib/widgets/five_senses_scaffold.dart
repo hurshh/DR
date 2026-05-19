@@ -32,11 +32,8 @@ class FiveSensesScaffold extends StatelessWidget {
       case 1:
         tab = BottomTab.learn;
         break;
-      case 2:
-        tab = BottomTab.play;
-        break;
       default:
-        tab = BottomTab.practice;
+        tab = BottomTab.play;
     }
 
     return Scaffold(

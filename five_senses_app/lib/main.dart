@@ -1,13 +1,12 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
 import 'models/app_routes.dart';
 import 'screens/game_result_screen.dart';
 import 'screens/home_screen.dart';
-import 'screens/learn_sight_step_1_screen.dart';
-import 'screens/learn_sight_step_2_screen.dart';
+import 'screens/learn_sight_screen.dart';
 import 'screens/our_five_senses_screen.dart';
 import 'screens/onboarding_screen.dart';
-import 'screens/practice_question_2_screen.dart';
 import 'screens/play_pick_screen.dart';
 import 'screens/sight_detail_screen.dart';
 import 'screens/smell_sorter_intro_screen.dart';
@@ -19,7 +18,18 @@ import 'screens/taste_classifier_intro_screen.dart';
 import 'screens/taste_classifier_question_4_screen.dart';
 import 'theme/app_theme.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await AudioPlayer.global.setAudioContext(
+      AudioContext(
+        iOS: AudioContextIOS(
+          category: AVAudioSessionCategory.playback,
+          options: {AVAudioSessionOptions.defaultToSpeaker},
+        ),
+      ),
+    );
+  } catch (_) {}
   runApp(const FiveSensesApp());
 }
 
@@ -38,10 +48,8 @@ class FiveSensesApp extends StatelessWidget {
         Routes.home: (_) => const HomeScreen(),
         Routes.ourFiveSenses: (_) => const OurFiveSensesScreen(),
         Routes.sightDetail: (_) => const SightDetailScreen(),
-        Routes.learnSightStep1: (_) => const LearnSightStep1Screen(),
-        Routes.learnSightStep2: (_) => const LearnSightStep2Screen(),
+        Routes.learnSight: (_) => const LearnSightScreen(),
         Routes.playPick: (_) => const PlayPickScreen(),
-        Routes.practiceQuestion2: (_) => const PracticeQuestion2Screen(),
         Routes.spotDifferenceResult: (_) => const SpotDifferenceResultScreen(),
         Routes.soundMatchIntro: (_) => const SoundMatchIntroScreen(),
         Routes.soundMatchRound2: (_) => const SoundMatchRound2Screen(),
