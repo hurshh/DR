@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../models/app_routes.dart';
-import '../theme/app_theme.dart';
 
 class SmellSorterQuestion3Screen extends StatelessWidget {
   const SmellSorterQuestion3Screen({super.key});

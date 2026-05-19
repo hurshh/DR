@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../models/app_routes.dart';
-import '../theme/app_theme.dart';
 
 class SoundMatchIntroScreen extends StatelessWidget {
   const SoundMatchIntroScreen({super.key});

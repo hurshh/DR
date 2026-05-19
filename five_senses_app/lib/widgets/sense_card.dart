@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_theme.dart';
 
 class SenseCard extends StatelessWidget {
   final String title;

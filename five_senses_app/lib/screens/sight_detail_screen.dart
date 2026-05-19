@@ -5,7 +5,6 @@ import '../models/sense.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../widgets/five_senses_scaffold.dart';
-import '../widgets/sense_card.dart';
 
 class SightDetailScreen extends StatelessWidget {
   const SightDetailScreen({super.key});
