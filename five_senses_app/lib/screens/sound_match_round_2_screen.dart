@@ -4,6 +4,9 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
 import '../models/app_routes.dart';
+import '../models/game_carry.dart';
+import '../models/game_result_data.dart';
+import '../services/app_data_service.dart';
 import '../services/audio_service.dart';
 
 class SoundMatchRound2Screen extends StatefulWidget {
@@ -24,6 +27,7 @@ class _SoundMatchRound2ScreenState extends State<SoundMatchRound2Screen> {
   int _score = 0;
   String? _selectedAnswer;
   late final List<_SoundQuestion> _questions;
+  late final DateTime _startTime;
 
   static const List<_SoundOption> _answerPool = [
     _SoundOption(label: 'Dog', icon: Icons.pets_rounded),
@@ -98,6 +102,7 @@ class _SoundMatchRound2ScreenState extends State<SoundMatchRound2Screen> {
   @override
   void initState() {
     super.initState();
+    _startTime = DateTime.now();
     _questions = _buildQuestions();
     Future.delayed(const Duration(milliseconds: 400), () {
       AudioService.instance.speak(
@@ -163,7 +168,25 @@ class _SoundMatchRound2ScreenState extends State<SoundMatchRound2Screen> {
 
   void _goToNextRound() {
     if (_roundIndex == _questions.length - 1) {
-      Navigator.pushReplacementNamed(context, Routes.gameResult);
+      final args = ModalRoute.of(context)?.settings.arguments;
+      final carry = args is GameCarry ? args : null;
+      AppDataService.instance.markGameCompleted('sound_match');
+      final totalCorrect = (carry?.correctSoFar ?? 0) + _score;
+      final totalTotal = (carry?.totalSoFar ?? 0) + _questions.length;
+      final elapsed = DateTime.now()
+          .difference(carry?.startTime ?? _startTime)
+          .inSeconds;
+      final data = GameResultData(
+        gameTitle: 'Sound Match',
+        gameEmoji: '🎵',
+        score: (carry?.scoreSoFar ?? 0) + _score * 100,
+        correct: totalCorrect,
+        total: totalTotal,
+        secondsUsed: elapsed,
+      );
+      AppDataService.instance.saveGameStars('sound_match', data.stars);
+      Navigator.pushReplacementNamed(context, Routes.gameResult,
+          arguments: data);
       return;
     }
 

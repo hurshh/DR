@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models/app_routes.dart';
+import '../models/game_result_data.dart';
+import '../services/app_data_service.dart';
 import '../services/audio_service.dart';
 import '../theme/app_theme.dart';
 
@@ -740,7 +742,23 @@ class _SDState extends State<SpotDifferenceResultScreen> {
             label: '🏆 See Final Results!',
             color: const Color(0xFFFFD04D),
             textColor: Colors.black87,
-            onTap: () => Navigator.pushReplacementNamed(context, Routes.gameResult),
+            onTap: () {
+              AppDataService.instance.markGameCompleted('spot_difference');
+              final correct =
+                  _found.fold<int>(0, (sum, s) => sum + s.length);
+              final data = GameResultData(
+                gameTitle: 'Spot the Difference',
+                gameEmoji: '🔍',
+                score: _score,
+                correct: correct,
+                total: _kRounds.fold<int>(0, (s, r) => s + r.zones.length),
+                secondsUsed: _seconds,
+              );
+              AppDataService.instance
+                  .saveGameStars('spot_difference', data.stars);
+              Navigator.pushReplacementNamed(context, Routes.gameResult,
+                  arguments: data);
+            },
           ),
         const SizedBox(height: 8),
         _btn(

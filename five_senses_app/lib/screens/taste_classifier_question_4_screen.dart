@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../models/app_routes.dart';
+import '../models/game_carry.dart';
+import '../models/game_result_data.dart';
+import '../services/app_data_service.dart';
 import '../services/audio_service.dart';
 
 // ─── Data models ─────────────────────────────────────────────────────────────
@@ -262,7 +265,25 @@ class _TasteClassifierQuestion4ScreenState
 
   void _navigateToResult() {
     _timer?.cancel();
-    Navigator.pushReplacementNamed(context, Routes.gameResult);
+    final args = ModalRoute.of(context)?.settings.arguments;
+    final carry = args is GameCarry ? args : null;
+    AppDataService.instance.markGameCompleted('taste_classifier');
+    final totalScore = (carry?.scoreSoFar ?? 0) + _score;
+    final totalCorrect = totalScore ~/ 200;
+    final totalTotal = (carry?.totalSoFar ?? 0) + _foods.length;
+    final secondsUsed = carry != null
+        ? DateTime.now().difference(carry.startTime).inSeconds
+        : _totalSeconds - _secondsLeft;
+    final data = GameResultData(
+      gameTitle: 'Taste Classifier',
+      gameEmoji: '👅',
+      score: totalScore,
+      correct: totalCorrect,
+      total: totalTotal,
+      secondsUsed: secondsUsed,
+    );
+    AppDataService.instance.saveGameStars('taste_classifier', data.stars);
+    Navigator.pushReplacementNamed(context, Routes.gameResult, arguments: data);
   }
 
   String get _timerLabel {

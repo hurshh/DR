@@ -198,7 +198,7 @@ class TasteClassifierIntroScreen extends StatelessWidget {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () => Navigator.pushReplacementNamed(
-                                context, Routes.tasteClassifierQuestion4),
+                                context, Routes.tasteClassifierQuestion1),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: _headerColor,
                               foregroundColor: Colors.white,

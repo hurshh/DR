@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/app_routes.dart';
+import '../services/app_data_service.dart';
 import '../services/audio_service.dart';
 import '../theme/app_theme.dart';
 
@@ -12,6 +13,8 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
+  final TextEditingController _nameController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -22,8 +25,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   void dispose() {
+    _nameController.dispose();
     AudioService.instance.stop();
     super.dispose();
+  }
+
+  Future<void> _onLetsGo() async {
+    final name = _nameController.text.trim();
+    await AppDataService.instance.saveUserName(name.isEmpty ? 'Explorer' : name);
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(context, Routes.home);
   }
 
   @override
@@ -181,10 +192,48 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ],
                     ),
                     const SizedBox(height: 28),
+                    // ── Name input ─────────────────────────────────────────
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.92),
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: TextField(
+                        controller: _nameController,
+                        textCapitalization: TextCapitalization.words,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF2A2A2A),
+                        ),
+                        decoration: InputDecoration(
+                          hintText: "What's your name?",
+                          hintStyle: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey.shade500,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          prefixIcon: const Icon(Icons.person_outline_rounded,
+                              color: AppTheme.orange),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 18, vertical: 16),
+                        ),
+                        onSubmitted: (_) => _onLetsGo(),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    // ── Let's Go button ────────────────────────────────────
                     InkWell(
                       borderRadius: BorderRadius.circular(30),
-                      onTap: () =>
-                          Navigator.pushReplacementNamed(context, Routes.home),
+                      onTap: _onLetsGo,
                       child: Container(
                         height: 54,
                         padding: const EdgeInsets.symmetric(horizontal: 22),

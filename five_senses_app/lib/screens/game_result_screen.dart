@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/app_routes.dart';
+import '../models/game_result_data.dart';
 import '../theme/app_theme.dart';
 
 class GameResultScreen extends StatelessWidget {
@@ -8,6 +9,35 @@ class GameResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Read real stats passed as route arguments; fall back gracefully if null.
+    final data =
+        ModalRoute.of(context)?.settings.arguments as GameResultData?;
+
+    final scoreStr = data != null ? '${data.score}' : '—';
+    final accuracyStr = data?.accuracyLabel ?? '—';
+    final timeStr = data?.timeLabel ?? '—';
+    final stars = data?.stars ?? 3;
+    final pct = data?.accuracyPct ?? 0;
+
+    // Dynamic headline based on accuracy.
+    final headline = pct >= 90
+        ? 'Amazing! 🌟'
+        : pct >= 70
+            ? 'Great Job! 🎉'
+            : pct >= 50
+                ? 'Well Done! 👍'
+                : 'Keep Going! 💪';
+    final subline = pct >= 90
+        ? "You're a Sense Champion!"
+        : pct >= 70
+            ? "You're getting the hang of it!"
+            : pct >= 50
+                ? 'Good effort — keep exploring!'
+                : 'Practice makes perfect!';
+
+    // Badge derived from game title.
+    final _BadgeInfo badge = _badgeFor(data?.gameTitle);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF7F0E6),
       body: SafeArea(
@@ -37,6 +67,7 @@ class GameResultScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(18, 22, 18, 26),
               child: Column(
                 children: [
+                  // ── Hero card ──────────────────────────────────────────────
                   Container(
                     margin: const EdgeInsets.only(top: 50),
                     padding: const EdgeInsets.symmetric(
@@ -52,49 +83,65 @@ class GameResultScreen extends StatelessWidget {
                         const Icon(Icons.emoji_events_rounded,
                             size: 74, color: Color(0xFFB7791F)),
                         const SizedBox(height: 10),
-                        const Text(
-                          'Amazing!',
-                          style: TextStyle(
-                            fontSize: 40,
+                        Text(
+                          headline,
+                          style: const TextStyle(
+                            fontSize: 38,
                             fontWeight: FontWeight.w900,
                             color: Color(0xFF1D2630),
                           ),
                         ),
                         const SizedBox(height: 6),
-                        const Text(
-                          'You\'re a Sense Champion!',
-                          style: TextStyle(
+                        Text(
+                          subline,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF9A9A9A),
                           ),
                         ),
+                        if (data != null) ...[
+                          const SizedBox(height: 10),
+                          Text(
+                            '${data.gameEmoji}  ${data.gameTitle}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFFB0A090),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
                   const SizedBox(height: 18),
+
+                  // ── Stat row ───────────────────────────────────────────────
                   Row(
                     children: [
                       _StatCard(
                         icon: Icons.star_rounded,
-                        value: '1,240',
+                        value: scoreStr,
                         label: 'Score',
                       ),
                       const SizedBox(width: 12),
                       _StatCard(
                         icon: Icons.percent_rounded,
-                        value: '90%',
+                        value: accuracyStr,
                         label: 'Accuracy',
                       ),
                       const SizedBox(width: 12),
                       _StatCard(
                         icon: Icons.timer_rounded,
-                        value: '1:42',
+                        value: timeStr,
                         label: 'Time',
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
+
+                  // ── Stars ──────────────────────────────────────────────────
                   const Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
@@ -114,26 +161,34 @@ class GameResultScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 6),
                         child: Icon(
                           Icons.star_rounded,
-                          color: const Color(0xFFFFD54A),
+                          color: i < stars
+                              ? const Color(0xFFFFD54A)
+                              : const Color(0xFFDADADA),
                           size: 34,
                         ),
                       );
                     }),
                   ),
                   const SizedBox(height: 6),
-                  const Text(
-                    '+4 Stars! New Record! ✨',
+                  Text(
+                    stars == 5
+                        ? '5 Stars! Perfect Score! ✨'
+                        : '$stars / 5 Stars',
                     style: TextStyle(
-                      color: Color(0xFFE95A2A),
+                      color: stars >= 4
+                          ? const Color(0xFFE95A2A)
+                          : const Color(0xFF9A9A9A),
                       fontSize: 16,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
                   const SizedBox(height: 18),
+
+                  // ── Badge ──────────────────────────────────────────────────
                   const Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Badges Unlocked 🔒',
+                      'Badge Unlocked 🏅',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w900,
@@ -143,27 +198,18 @@ class GameResultScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const _Badge(
-                        bg: Color(0xFF5AD0C6),
-                        label: 'Sound Pro',
-                        icon: Icons.volume_up_rounded,
-                      ),
-                      const SizedBox(width: 12),
-                      const _Badge(
-                        bg: Color(0xFFFF7C93),
-                        label: 'Smell Expert',
-                        icon: Icons.local_florist_rounded,
-                      ),
-                      const SizedBox(width: 12),
-                      const _Badge(
-                        bg: Color(0xFFFFD94A),
-                        label: 'Taste Ace',
-                        icon: Icons.local_drink_rounded,
+                      _Badge(
+                        bg: badge.color,
+                        label: badge.label,
+                        icon: badge.icon,
                       ),
                     ],
                   ),
                   const SizedBox(height: 18),
+
+                  // ── Buttons ────────────────────────────────────────────────
                   SizedBox(
                     height: 54,
                     width: double.infinity,
@@ -203,7 +249,7 @@ class GameResultScreen extends StatelessWidget {
                         ),
                       ),
                       onPressed: () =>
-                          Navigator.pushReplacementNamed(context, Routes.playPick),
+                          Navigator.pushReplacementNamed(context, Routes.home),
                       child: const Text(
                         'Go Home',
                         style: TextStyle(
@@ -216,7 +262,8 @@ class GameResultScreen extends StatelessWidget {
                   const SizedBox(height: 14),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 14),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.55),
                       borderRadius: BorderRadius.circular(18),
@@ -228,8 +275,10 @@ class GameResultScreen extends StatelessWidget {
                             color: Color(0xFF2A2A2A)),
                         const SizedBox(width: 10),
                         TextButton(
-                          onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Share sheet coming soon.')),
+                          onPressed: () =>
+                              ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Share sheet coming soon.')),
                           ),
                           child: const Text(
                             'Share Score with Friends!',
@@ -252,6 +301,56 @@ class GameResultScreen extends StatelessWidget {
       ),
     );
   }
+
+  // ── Badge helper ─────────────────────────────────────────────────────────
+
+  static _BadgeInfo _badgeFor(String? gameTitle) {
+    switch (gameTitle) {
+      case 'Spot the Difference':
+        return const _BadgeInfo(
+          color: Color(0xFF5AD0C6),
+          label: 'Sight Pro',
+          icon: Icons.visibility_rounded,
+        );
+      case 'Sound Match':
+        return const _BadgeInfo(
+          color: Color(0xFF53D2C7),
+          label: 'Sound Pro',
+          icon: Icons.volume_up_rounded,
+        );
+      case 'Smell Sorter':
+        return const _BadgeInfo(
+          color: Color(0xFFF5D457),
+          label: 'Smell Expert',
+          icon: Icons.local_florist_rounded,
+        );
+      case 'Taste Classifier':
+        return const _BadgeInfo(
+          color: Color(0xFF7C4DFF),
+          label: 'Taste Ace',
+          icon: Icons.local_drink_rounded,
+        );
+      case 'Texture Match':
+        return const _BadgeInfo(
+          color: Color(0xFFFF7A3B),
+          label: 'Touch Master',
+          icon: Icons.touch_app_rounded,
+        );
+      default:
+        return const _BadgeInfo(
+          color: Color(0xFFFFD94A),
+          label: 'Explorer',
+          icon: Icons.emoji_events_rounded,
+        );
+    }
+  }
+}
+
+class _BadgeInfo {
+  final Color color;
+  final String label;
+  final IconData icon;
+  const _BadgeInfo({required this.color, required this.label, required this.icon});
 }
 
 class _StatCard extends StatelessWidget {

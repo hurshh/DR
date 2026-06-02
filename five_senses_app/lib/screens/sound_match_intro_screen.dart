@@ -221,7 +221,7 @@ class SoundMatchIntroScreen extends StatelessWidget {
                             ),
                             onPressed: () => Navigator.pushReplacementNamed(
                               context,
-                              Routes.soundMatchRound2,
+                              Routes.soundMatchRound1,
                             ),
                             child: const Row(
                               mainAxisAlignment: MainAxisAlignment.center,

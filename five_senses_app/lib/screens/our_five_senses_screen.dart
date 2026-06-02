@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/app_routes.dart';
 import '../models/sense.dart';
+import '../services/app_data_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../widgets/five_senses_scaffold.dart';
@@ -133,60 +134,123 @@ class OurFiveSensesScreen extends StatelessWidget {
     );
   }
 
-  // ── Phone: 2-col grid + full-width touch card ─────────────────────────────
+  // ── Phone: 2-col rows + full-width touch ─────────────────────────────────
+  // LayoutBuilder lives HERE (not inside SenseCard) so IntrinsicHeight can
+  // query intrinsic dimensions without hitting the LayoutBuilder restriction.
 
   Widget _buildPhoneGrid(BuildContext context) {
-    return Column(
-      children: [
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
-          crossAxisSpacing: 14,
-          mainAxisSpacing: 14,
-          childAspectRatio: 1 / 1.08,
+    const sp = 14.0;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cardW       = (constraints.maxWidth - sp) / 2;
+        final iconContSz  = (cardW * 0.30).clamp(52.0, 74.0);
+        final iconSz      = iconContSz * 0.48;
+
+        SenseCard card(SenseType type) =>
+            _buildCard(context, type, iconContSz, iconSz);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _senseCard(context, SenseType.sight),
-            _senseCard(context, SenseType.hearing),
-            _senseCard(context, SenseType.smell),
-            _senseCard(context, SenseType.taste),
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: card(SenseType.sight)),
+                  const SizedBox(width: sp),
+                  Expanded(child: card(SenseType.hearing)),
+                ],
+              ),
+            ),
+            const SizedBox(height: sp),
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: card(SenseType.smell)),
+                  const SizedBox(width: sp),
+                  Expanded(child: card(SenseType.taste)),
+                ],
+              ),
+            ),
+            const SizedBox(height: sp),
+            // Touch — full width
+            card(SenseType.touch),
+            const SizedBox(height: sp),
+            _progressPill(context),
           ],
-        ),
-        const SizedBox(height: 14),
-        _touchCard(context),
-        const SizedBox(height: 14),
-        _progressPill(context),
-      ],
+        );
+      },
     );
   }
 
-  // ── Tablet: 3-col grid with touch card in last slot ──────────────────────
+  // ── Tablet: 3-col row + 2-col row (no empty slot) ────────────────────────
 
   Widget _buildTabletGrid(BuildContext context) {
-    return Column(
-      children: [
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 3,
-          crossAxisSpacing: 18,
-          mainAxisSpacing: 18,
-          childAspectRatio: 1.1,
+    const sp = 18.0;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final totalW = constraints.maxWidth;
+
+        // Row 1 cards are narrower (3-col) → smaller icon
+        final card3W     = (totalW - 2 * sp) / 3;
+        final iconCont3  = (card3W * 0.28).clamp(52.0, 76.0);
+        final iconSz3    = iconCont3 * 0.48;
+
+        // Row 2 cards are wider (2-col) → slightly larger icon but capped
+        final card2W     = (totalW - sp) / 2;
+        final iconCont2  = (card2W * 0.20).clamp(52.0, 80.0);
+        final iconSz2    = iconCont2 * 0.48;
+
+        SenseCard card3(SenseType type) =>
+            _buildCard(context, type, iconCont3, iconSz3);
+        SenseCard card2(SenseType type) =>
+            _buildCard(context, type, iconCont2, iconSz2);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _senseCard(context, SenseType.sight),
-            _senseCard(context, SenseType.hearing),
-            _senseCard(context, SenseType.smell),
-            _senseCard(context, SenseType.taste),
-            _touchCard(context),
+            // Row 1 — Sight | Hearing | Smell
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: card3(SenseType.sight)),
+                  const SizedBox(width: sp),
+                  Expanded(child: card3(SenseType.hearing)),
+                  const SizedBox(width: sp),
+                  Expanded(child: card3(SenseType.smell)),
+                ],
+              ),
+            ),
+            const SizedBox(height: sp),
+            // Row 2 — Taste | Touch  (50 % each — no empty slot)
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: card2(SenseType.taste)),
+                  const SizedBox(width: sp),
+                  Expanded(child: card2(SenseType.touch)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            _progressPill(context),
           ],
-        ),
-        const SizedBox(height: 20),
-        _progressPill(context),
-      ],
+        );
+      },
     );
   }
 
-  Widget _senseCard(BuildContext context, SenseType type) {
+  /// Builds a [SenseCard] with explicit icon sizes determined by the
+  /// LayoutBuilder in each grid method. No LayoutBuilder inside the card.
+  SenseCard _buildCard(
+    BuildContext context,
+    SenseType type,
+    double iconContainerSize,
+    double iconSize,
+  ) {
     final model = senses.firstWhere((s) => s.type == type);
     return SenseCard(
       title: model.title,
@@ -194,36 +258,47 @@ class OurFiveSensesScreen extends StatelessWidget {
       icon: model.icon,
       cardColor: model.chipColor,
       filled: false,
-      onTap: () {
-        if (type == SenseType.sight) {
-          Navigator.pushReplacementNamed(context, Routes.sightDetail);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('This sense is coming soon.')),
-          );
-        }
-      },
+      iconContainerSize: iconContainerSize,
+      iconSize: iconSize,
+      onTap: () => _navigateToDetail(context, type),
     );
   }
 
-  Widget _touchCard(BuildContext context) {
-    final model = senses.firstWhere((s) => s.type == SenseType.touch);
-    return SenseCard(
-      title: model.title,
-      subtitle: model.subtitle,
-      icon: model.icon,
-      cardColor: model.chipColor,
-      filled: false,
-      width: double.infinity,
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Touch is coming soon.')),
-        );
-      },
-    );
+  // Legacy helper kept for any callers outside the grid builders.
+  Widget _senseCard(BuildContext context, SenseType type) =>
+      _buildCard(context, type, 68, 32);
+
+  Widget _touchCard(BuildContext context) =>
+      _senseCard(context, SenseType.touch);
+
+  void _navigateToDetail(BuildContext context, SenseType type) {
+    final svc = AppDataService.instance;
+    switch (type) {
+      case SenseType.sight:
+        svc.markSenseExplored('sight');
+        Navigator.pushReplacementNamed(context, Routes.sightDetail);
+        break;
+      case SenseType.hearing:
+        svc.markSenseExplored('hearing');
+        Navigator.pushReplacementNamed(context, Routes.hearingDetail);
+        break;
+      case SenseType.smell:
+        svc.markSenseExplored('smell');
+        Navigator.pushReplacementNamed(context, Routes.smellDetail);
+        break;
+      case SenseType.taste:
+        svc.markSenseExplored('taste');
+        Navigator.pushReplacementNamed(context, Routes.tasteDetail);
+        break;
+      case SenseType.touch:
+        svc.markSenseExplored('touch');
+        Navigator.pushReplacementNamed(context, Routes.touchDetail);
+        break;
+    }
   }
 
   Widget _progressPill(BuildContext context) {
+    final count = AppDataService.instance.exploredSenses.length;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
@@ -231,7 +306,9 @@ class OurFiveSensesScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(30),
       ),
       child: Text(
-        '2 / 5 Senses Explored ✨',
+        count == 5
+            ? '5 / 5 Senses Explored ✨'
+            : '$count / 5 Senses Explored',
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w800,

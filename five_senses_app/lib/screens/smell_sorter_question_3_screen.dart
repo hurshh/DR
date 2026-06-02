@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../models/app_routes.dart';
+import '../models/game_carry.dart';
+import '../models/game_result_data.dart';
+import '../services/app_data_service.dart';
 import '../services/audio_service.dart';
 
 // ─── Data ────────────────────────────────────────────────────────────────────
@@ -155,7 +158,25 @@ class _SmellSorterQuestion3ScreenState
 
   void _navigateToResult() {
     _timer?.cancel();
-    Navigator.pushReplacementNamed(context, Routes.gameResult);
+    final args = ModalRoute.of(context)?.settings.arguments;
+    final carry = args is GameCarry ? args : null;
+    AppDataService.instance.markGameCompleted('smell_sorter');
+    final q3Correct = _score ~/ 2;
+    final totalCorrect = (carry?.correctSoFar ?? 0) + q3Correct;
+    final totalTotal = (carry?.totalSoFar ?? 0) + _smells.length;
+    final secondsUsed = carry != null
+        ? DateTime.now().difference(carry.startTime).inSeconds
+        : _totalSeconds - _secondsLeft;
+    final data = GameResultData(
+      gameTitle: 'Smell Sorter',
+      gameEmoji: '👃',
+      score: totalCorrect * 20, // 20 pts per correct for a clean total
+      correct: totalCorrect,
+      total: totalTotal,
+      secondsUsed: secondsUsed,
+    );
+    AppDataService.instance.saveGameStars('smell_sorter', data.stars);
+    Navigator.pushReplacementNamed(context, Routes.gameResult, arguments: data);
   }
 
   String get _timerLabel {

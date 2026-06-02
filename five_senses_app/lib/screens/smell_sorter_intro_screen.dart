@@ -90,7 +90,7 @@ class SmellSorterIntroScreen extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () => Navigator.pushReplacementNamed(
-                          context, Routes.smellSorterQuestion3),
+                          context, Routes.smellSorterQuestion1),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _headerColor,
                         foregroundColor: Colors.black87,

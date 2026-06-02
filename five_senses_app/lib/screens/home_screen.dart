@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/activity.dart';
 import '../models/app_routes.dart';
+import '../services/app_data_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/activity_card.dart';
 import '../widgets/app_bottom_nav.dart';
@@ -33,6 +34,15 @@ class HomeScreen extends StatelessWidget {
       body: LayoutBuilder(
         builder: (context, constraints) {
           final headerHeight = constraints.maxHeight * 0.23;
+
+          // ── Live data from AppDataService ──────────────────────────────────
+          final svc = AppDataService.instance;
+          final name = svc.userName.isEmpty ? 'Explorer' : svc.userName;
+          final exploredSenses = svc.exploredSenses;
+          final exploredCount = exploredSenses.length;
+          final progressFraction = exploredCount / 5;
+          final progressPct = (progressFraction * 100).round();
+
           return Column(
             children: [
               SizedBox(
@@ -53,7 +63,7 @@ class HomeScreen extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Text(
-                                'Hello, Explorer! 👋',
+                                'Hello, $name! 👋',
                                 style: Theme.of(context)
                                     .textTheme
                                     .headlineSmall
@@ -62,17 +72,23 @@ class HomeScreen extends StatelessWidget {
                                       fontWeight: FontWeight.w900,
                                       letterSpacing: -0.2,
                                     ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            Container(
-                              width: 54,
-                              height: 54,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white70,
+                            GestureDetector(
+                              onTap: () => Navigator.pushNamed(
+                                  context, Routes.settings),
+                              child: Container(
+                                width: 54,
+                                height: 54,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white70,
+                                ),
+                                child: const Icon(Icons.face,
+                                    color: AppTheme.orangeDeep, size: 28),
                               ),
-                              child: const Icon(Icons.face,
-                                  color: AppTheme.orangeDeep, size: 28),
                             )
                           ],
                         ),
@@ -89,16 +105,16 @@ class HomeScreen extends StatelessWidget {
                           children: [
                             Expanded(
                               child: LinearProgressBar(
-                                progress: 0.5,
+                                progress: progressFraction,
                                 activeColor: const Color(0xFFFFE0B8),
                                 inactiveColor: Colors.white.withOpacity(0.22),
                                 height: 10,
                               ),
                             ),
                             const SizedBox(width: 10),
-                            const Text(
-                              '50% complete',
-                              style: TextStyle(
+                            Text(
+                              '$progressPct% complete',
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -167,45 +183,47 @@ class HomeScreen extends StatelessWidget {
                       const SizedBox(height: 22),
                       Row(
                         children: [
-                          const Text(
-                            'Senses unlocked:',
-                            style: TextStyle(
+                          Text(
+                            '$exploredCount / 5 Senses Explored',
+                            style: const TextStyle(
                               fontSize: 18,
                               color: Color(0xFF9A9A9A),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                           const SizedBox(width: 10),
-                          Expanded(
-                            child: Wrap(
-                              spacing: 14,
-                              runSpacing: 14,
-                              alignment: WrapAlignment.start,
-                              children: const [
-                                // Unlocked state is represented visually only.
-                                _SenseDot(
-                                  color: Color(0xFF58D3CA),
-                                  icon: Icons.visibility,
-                                ),
-                                _SenseDot(
-                                  color: Color(0xFF57C8C6),
-                                  icon: Icons.hearing,
-                                ),
-                                _SenseDot(
-                                  color: Color(0xFFF2D35B),
-                                  icon: Icons.spa,
-                                ),
-                                _SenseDot(
-                                  color: Color(0xFF6B5DE6),
-                                  icon: Icons.local_drink,
-                                ),
-                                _SenseDot(
-                                  color: Color(0xFFFF7A3B),
-                                  icon: Icons.handyman,
-                                ),
-                              ],
-                            ),
-                          )
+                          Wrap(
+                            spacing: 14,
+                            runSpacing: 14,
+                            alignment: WrapAlignment.start,
+                            children: [
+                              _SenseDot(
+                                activeColor: const Color(0xFF58D3CA),
+                                icon: Icons.visibility,
+                                explored: exploredSenses.contains('sight'),
+                              ),
+                              _SenseDot(
+                                activeColor: const Color(0xFF57C8C6),
+                                icon: Icons.hearing,
+                                explored: exploredSenses.contains('hearing'),
+                              ),
+                              _SenseDot(
+                                activeColor: const Color(0xFFF2D35B),
+                                icon: Icons.spa,
+                                explored: exploredSenses.contains('smell'),
+                              ),
+                              _SenseDot(
+                                activeColor: const Color(0xFF6B5DE6),
+                                icon: Icons.local_drink,
+                                explored: exploredSenses.contains('taste'),
+                              ),
+                              _SenseDot(
+                                activeColor: const Color(0xFFFF7A3B),
+                                icon: Icons.handyman,
+                                explored: exploredSenses.contains('touch'),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ],
@@ -221,12 +239,14 @@ class HomeScreen extends StatelessWidget {
 }
 
 class _SenseDot extends StatelessWidget {
-  final Color color;
+  final Color activeColor;
   final IconData icon;
+  final bool explored;
 
   const _SenseDot({
-    required this.color,
+    required this.activeColor,
     required this.icon,
+    required this.explored,
   });
 
   @override
@@ -236,12 +256,12 @@ class _SenseDot extends StatelessWidget {
       height: 42,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: color,
+        color: explored ? activeColor : const Color(0xFFDADADA),
       ),
       alignment: Alignment.center,
       child: Icon(
         icon,
-        color: Colors.white,
+        color: explored ? Colors.white : const Color(0xFFAAAAAA),
         size: 20,
       ),
     );

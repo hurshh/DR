@@ -1,12 +1,22 @@
 import 'package:flutter/material.dart';
 
 import '../models/app_routes.dart';
+import '../services/app_data_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../widgets/five_senses_scaffold.dart';
 
 class PlayPickScreen extends StatelessWidget {
   const PlayPickScreen({super.key});
+
+  /// Maps a 0–5 star rating to the 0–3 star display used by [_MiniGameCard].
+  static int _displayStars(String gameId) {
+    final s = AppDataService.instance.getBestStars(gameId);
+    if (s >= 4) return 3;
+    if (s >= 2) return 2;
+    if (s >= 1) return 1;
+    return 0;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +90,7 @@ class PlayPickScreen extends StatelessWidget {
                     stripeColor: const Color(0xFF57D2C7),
                     title: 'Spot the Difference',
                     subtitle: 'Sight',
-                    rating: 3,
+                    rating: _displayStars('spot_difference'),
                     locked: false,
                     icon: Icons.search_rounded,
                     onTap: () {
@@ -95,7 +105,7 @@ class PlayPickScreen extends StatelessWidget {
                     stripeColor: const Color(0xFF57C8C6),
                     title: 'Sound Match',
                     subtitle: 'Hearing',
-                    rating: 3,
+                    rating: _displayStars('sound_match'),
                     locked: false,
                     icon: Icons.mic_none_rounded,
                     onTap: () {
@@ -110,7 +120,7 @@ class PlayPickScreen extends StatelessWidget {
                     stripeColor: const Color(0xFFF2D35B),
                     title: 'Smell Sorter',
                     subtitle: 'Smell',
-                    rating: 2,
+                    rating: _displayStars('smell_sorter'),
                     locked: false,
                     icon: Icons.local_florist_rounded,
                     onTap: () {
@@ -125,7 +135,7 @@ class PlayPickScreen extends StatelessWidget {
                     stripeColor: const Color(0xFF6B5DE6),
                     title: 'Taste Classifier',
                     subtitle: 'Taste',
-                    rating: 2,
+                    rating: _displayStars('taste_classifier'),
                     locked: false,
                     icon: Icons.local_drink_rounded,
                     onTap: () {
@@ -140,14 +150,13 @@ class PlayPickScreen extends StatelessWidget {
                     stripeColor: const Color(0xFFFF7A3B),
                     title: 'Texture Match',
                     subtitle: 'Touch',
-                    rating: 0,
-                    locked: true,
-                    icon: Icons.handyman_rounded,
+                    rating: _displayStars('texture_match'),
+                    locked: false,
+                    icon: Icons.pan_tool_outlined,
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Texture Match is coming soon.'),
-                        ),
+                      Navigator.pushReplacementNamed(
+                        context,
+                        Routes.textureMatchIntro,
                       );
                     },
                   ),
